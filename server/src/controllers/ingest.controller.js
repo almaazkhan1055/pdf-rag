@@ -1,5 +1,6 @@
 import Document from "../models/document.model.js";
 import { documentQueue } from "../queues/document.queue.js";
+import { uploadPdf } from "../services/imagekit.service.js";
 
 export const ingestDocument = async (req, res) => {
   console.log("req.file", req.file);
@@ -12,11 +13,15 @@ export const ingestDocument = async (req, res) => {
         message: "PDF file is required",
       });
     }
+
+    const uploadedFile = await uploadPdf(req.file);
+    console.log("PDF uploaded to ImageKit:", uploadedFile);
+
     // 1. Create document record
     const document = await Document.create({
       originalName: req.file.originalname,
-      filename: req.file.filename,
-      path: req.file.path,
+      filename: uploadedFile.name,
+      path: uploadedFile.url,
       mimetype: req.file.mimetype,
       size: req.file.size,
       status: "queued",

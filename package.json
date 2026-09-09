@@ -7,6 +7,7 @@
     "@langchain/textsplitters": "^1.0.1",
     "deepagents": "^1.13.3",
     "dotenv": "^17.4.2",
+    "imagekit": "^6.0.0",
     "langchain": "^1.5.10",
     "tsx": "^4.23.13",
     "zod": "^4.5.4"
