@@ -99,6 +99,7 @@ Create `client/.env`:
 ```env
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
 ## Run
@@ -149,6 +150,18 @@ curl -X POST http://localhost:8080/api/ingest \
 
 Document status lifecycle: `queued` → `processing` → `completed` | `failed`.
 
+### List documents
+
+```bash
+curl http://localhost:8080/api/documents
+```
+
+### Get document status
+
+```bash
+curl http://localhost:8080/api/documents/<documentId>
+```
+
 ### Ask a question
 
 ```bash
@@ -183,10 +196,17 @@ Answers are grounded in retrieved chunks. If there is not enough context, the mo
 | Route | Purpose |
 |-------|---------|
 | `/` | Redirects to `/upload` |
-| `/upload` | PDF upload UI |
-| `/ask` | Q&A UI |
+| `/upload` | PDF upload, status polling, document list |
+| `/ask` | Chat Q&A with retrieved sources |
 
-Auth is handled by Clerk. The UI is scaffolded; wire it to `POST /api/ingest` and `POST /api/chat` to connect the full flow end-to-end.
+Auth is handled by Clerk. The UI calls:
+
+- `POST /api/ingest` — upload PDF (`multipart/form-data`, field `pdf`)
+- `GET /api/documents` — list documents + statuses
+- `GET /api/documents/:id` — poll a single document
+- `POST /api/chat` — ask a question (`{ "question": "..." }`)
+
+Set `NEXT_PUBLIC_API_URL=http://localhost:8080` in `client/.env`.
 
 ## Notable details
 

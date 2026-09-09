@@ -6,24 +6,34 @@ export default function Header() {
   const { isLoaded, isSignedIn, user } = useUser();
 
   return (
-    <header className="flex justify-end items-center p-4 gap-4 h-16 bg-slate-950 border-b border-gray-800">
-      {!isLoaded && !isSignedIn && <div>Loading...</div>}
-      {!isSignedIn && isLoaded && (
-        <SignInButton mode="modal">
-          <button className="bg-[#6c47ff] text-white rounded-full px-5 py-2">
-            Sign In
-          </button>
-        </SignInButton>
-      )}
+    <header className="app-header">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold tracking-tight text-white">
+          PDF RAG
+        </p>
+        <p className="header-subtitle">Document Q&A</p>
+      </div>
 
-      {isSignedIn && (
-        <div className="flex items-center gap-5 text-sm text-gray-500">
-          <span>
-            Welcome! {user.firstName} {user.lastName}
-          </span>
-          <UserButton />
-        </div>
-      )}
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+        {!isLoaded && <div className="text-sm text-gray-500">Loading...</div>}
+
+        {isLoaded && !isSignedIn && (
+          <SignInButton mode="modal">
+            <button className="btn-primary btn-primary-block !min-h-0 !w-auto px-4 py-2">
+              Sign In
+            </button>
+          </SignInButton>
+        )}
+
+        {isSignedIn && (
+          <div className="flex items-center gap-2 text-sm text-gray-400 sm:gap-3">
+            <span className="header-username">
+              {user.firstName} {user.lastName}
+            </span>
+            <UserButton />
+          </div>
+        )}
+      </div>
     </header>
   );
 }
