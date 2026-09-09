@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "checkJs": false,
+    "allowJs": true,
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
