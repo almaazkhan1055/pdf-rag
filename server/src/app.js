@@ -11,13 +11,40 @@ config();
 const app = express();
 
 // Global middleware
-app.use(cors());
+
+const allowedOrigins = process.env.CLIENT_URLS?.split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Database
 connectDB();
 
 // Routes
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is healthy",
+  });
+});
+
 app.use("/api", ingestRoutes);
 app.use("/api", chatRoutes);
 app.use("/api", documentRoutes);

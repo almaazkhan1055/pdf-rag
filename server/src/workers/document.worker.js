@@ -95,6 +95,7 @@ const worker = new Worker(
 
       await QdrantVectorStore.fromDocuments(documents, embeddings, {
         url: process.env.QDRANT_URL,
+        apiKey: process.env.QDRANT_API_KEY,
         collectionName: process.env.QDRANT_COLLECTION,
       });
 
@@ -154,3 +155,17 @@ worker.on("error", (error) => {
 });
 
 console.log("Document worker started");
+
+const shutdown = async (signal) => {
+  console.log(`${signal} received. Shutting down worker...`);
+
+  await worker.close();
+  await connection.quit();
+
+  console.log("Worker shut down gracefully");
+
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
