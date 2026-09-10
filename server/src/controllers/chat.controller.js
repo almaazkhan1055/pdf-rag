@@ -57,3 +57,31 @@ export const chat = async (req, res) => {
     });
   }
 };
+
+export const testGemini = async (req, res) => {
+  try {
+    console.log("Testing Gemini...");
+    console.log("Gemini model:", MODEL);
+
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: "Reply with exactly: Gemini test successful",
+    });
+
+    console.log("Gemini test response:", response.text);
+
+    return res.status(200).json({
+      success: true,
+      model: MODEL,
+      answer: response.text,
+    });
+  } catch (error) {
+    console.error("Gemini test error:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+      status: error.status,
+    });
+  }
+};
