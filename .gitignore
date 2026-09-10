@@ -113,3 +113,7 @@ docker-data/
 # =========================================================
 
 *.generated.*
+
+
+# Ignore accidental/generated nested Next.js client build folder
+client/client/
