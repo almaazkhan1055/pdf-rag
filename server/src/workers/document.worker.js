@@ -3,14 +3,13 @@ import "dotenv/config";
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { QdrantVectorStore } from "@langchain/qdrant";
-import connectDB from "../db/db.js";
 
 import Document from "../models/document.model.js";
 import { extractPdfText } from "../services/document.service.js";
 import { createChunks } from "../services/chunk.service.js";
 import { embeddings } from "../services/embedding.service.js";
 
-const connection = new IORedis(process.env.REDIS_URL, {
+export const connection = new IORedis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
 });
 
@@ -26,10 +25,7 @@ connection.on("error", (error) => {
   console.error("Valkey error:", error.message);
 });
 
-await connectDB();
-console.log("Worker MongoDB connection established");
-
-const worker = new Worker(
+export const worker = new Worker(
   "document-processing",
 
   async (job) => {
@@ -155,17 +151,3 @@ worker.on("error", (error) => {
 });
 
 console.log("Document worker started");
-
-const shutdown = async (signal) => {
-  console.log(`${signal} received. Shutting down worker...`);
-
-  await worker.close();
-  await connection.quit();
-
-  console.log("Worker shut down gracefully");
-
-  process.exit(0);
-};
-
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
