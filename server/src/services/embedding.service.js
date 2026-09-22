@@ -42,6 +42,15 @@ const embedBatchWithRetry = async (batch) => {
 
       return response.embeddings.map((embedding) => embedding.values);
     } catch (error) {
+      console.error("=================================");
+      console.error("DOCUMENT PROCESSING FAILED");
+      console.error("Error:", error);
+      console.error("Error message:", error?.message);
+      console.error("Error cause:", error?.cause);
+      console.error("Cause code:", error?.cause?.code);
+      console.error("Cause message:", error?.cause?.message);
+      console.error("Stack:", error?.stack);
+      console.error("=================================");
       const isRateLimit =
         error?.status === 429 ||
         error?.code === 429 ||

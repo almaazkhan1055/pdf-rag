@@ -119,6 +119,15 @@ export const worker = new Worker(
         chunks: documents.length,
       };
     } catch (error) {
+      console.error("=================================");
+      console.error("DOCUMENT PROCESSING FAILED");
+      console.error("Error:", error);
+      console.error("Error message:", error?.message);
+      console.error("Error cause:", error?.cause);
+      console.error("Cause code:", error?.cause?.code);
+      console.error("Cause message:", error?.cause?.message);
+      console.error("Stack:", error?.stack);
+      console.error("=================================");
       // ----------------------------------------------
       // Mark document as failed
       // ----------------------------------------------

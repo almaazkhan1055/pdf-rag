@@ -5,6 +5,8 @@ import connectDB from "./db/db.js";
 import ingestRoutes from "./routers/ingest.routes.js";
 import chatRoutes from "./routers/chat.routes.js";
 import documentRoutes from "./routers/document.routes.js";
+import conversationListRoutes from "./routers/conversations.routes.js";
+import { clerkMiddleware } from "@clerk/express";
 
 config();
 
@@ -33,6 +35,7 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use(clerkMiddleware());
 
 // Database
 connectDB();
@@ -48,5 +51,6 @@ app.get("/health", (req, res) => {
 app.use("/api", ingestRoutes);
 app.use("/api", chatRoutes);
 app.use("/api", documentRoutes);
+app.use("/api", conversationListRoutes);
 
 export default app;

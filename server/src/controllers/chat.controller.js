@@ -1,13 +1,15 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
 import { searchSimilarDocuments } from "../services/vector.service.js";
 import { buildRagPrompt } from "../services/prompt.js";
+import ConversationsList from "../models/conversationsList.model.js";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+const ai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-const MODEL = process.env.GEMINI_CHAT_MODEL || "gemini-3.6-flash";
+const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
 
 export const chat = async (req, res) => {
   try {
@@ -20,6 +22,14 @@ export const chat = async (req, res) => {
       });
     }
 
+    // Create conversation record
+    const conversation = await ConversationsList.create({
+      userId,
+      title: question,
+    });
+
+    console.log("MongoDB conversation record created:", conversation);
+
     const results = await searchSimilarDocuments(question, 5);
 
     const context = results
@@ -31,12 +41,17 @@ export const chat = async (req, res) => {
       question,
     });
 
-    const response = await ai.models.generateContent({
+    const response = await ai.chat.completions.create({
       model: MODEL,
-      contents: prompt,
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
     });
 
-    const answer = response.text;
+    const answer = response.choices[0]?.message?.content || "";
 
     return res.status(200).json({
       success: true,

@@ -1,5 +1,4 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 async function parseJson(response) {
   const data = await response.json().catch(() => ({}));
@@ -11,12 +10,15 @@ async function parseJson(response) {
   return data;
 }
 
-export async function uploadPdf(file) {
+export async function uploadPdf(file, token) {
   const formData = new FormData();
   formData.append("pdf", file);
 
   const response = await fetch(`${API_BASE_URL}/api/ingest`, {
     method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     body: formData,
   });
 

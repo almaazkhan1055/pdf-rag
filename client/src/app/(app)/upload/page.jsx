@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { getDocument, listDocuments, uploadPdf } from "@/lib/api";
 
 const STATUS_STYLES = {
@@ -18,6 +19,7 @@ function formatSize(bytes) {
 }
 
 export default function UploadPage() {
+  const { getToken } = useAuth();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -110,12 +112,24 @@ export default function UploadPage() {
     setSuccess("");
 
     try {
-      const data = await uploadPdf(file);
+      const token = await getToken();
+
+      if (!token) {
+        throw new Error("You are not authenticated.");
+      }
+
+      const data = await uploadPdf(file, token);
+
       setSuccess(data.message || "Document uploaded and queued.");
       setFile(null);
+
       await refreshDocuments();
-      if (data.documentId) startPolling(data.documentId);
+
+      if (data.documentId) {
+        startPolling(data.documentId);
+      }
     } catch (err) {
+      console.error("Upload error:", err);
       setError(err.message || "Upload failed.");
     } finally {
       setUploading(false);
