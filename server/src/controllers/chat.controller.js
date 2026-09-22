@@ -1,18 +1,19 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
+import { getAuth } from "@clerk/express";
 
 import { searchSimilarDocuments } from "../services/vector.service.js";
 import { buildRagPrompt } from "../services/prompt.js";
 import ConversationsList from "../models/conversationsList.model.js";
 
-const ai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
-const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
+const MODEL = process.env.GEMINI_CHAT_MODEL || "gemini-3.6-flash";
 
 export const chat = async (req, res) => {
   try {
+    const { userId } = getAuth(req);
     const { question } = req.body;
 
     if (!question?.trim()) {
@@ -22,13 +23,13 @@ export const chat = async (req, res) => {
       });
     }
 
-    // Create conversation record
-    const conversation = await ConversationsList.create({
-      userId,
-      title: question,
-    });
-
-    console.log("MongoDB conversation record created:", conversation);
+    if (userId) {
+      const conversation = await ConversationsList.create({
+        userId,
+        title: question,
+      });
+      console.log("MongoDB conversation record created:", conversation);
+    }
 
     const results = await searchSimilarDocuments(question, 5);
 
@@ -41,17 +42,12 @@ export const chat = async (req, res) => {
       question,
     });
 
-    const response = await ai.chat.completions.create({
+    const response = await ai.models.generateContent({
       model: MODEL,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      contents: prompt,
     });
 
-    const answer = response.choices[0]?.message?.content || "";
+    const answer = response.text || "";
 
     return res.status(200).json({
       success: true,
@@ -66,9 +62,18 @@ export const chat = async (req, res) => {
   } catch (error) {
     console.error("Chat error:", error);
 
-    return res.status(500).json({
+    const isRateLimit =
+      error?.status === 429 ||
+      error?.code === 429 ||
+      error?.message?.includes("Rate limit") ||
+      error?.message?.includes("RESOURCE_EXHAUSTED") ||
+      error?.message?.includes("quota");
+
+    return res.status(isRateLimit ? 429 : 500).json({
       success: false,
-      message: "Failed to generate answer",
+      message: isRateLimit
+        ? "AI rate limit reached. Please try again later."
+        : "Failed to generate answer",
     });
   }
 };

@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import TextArea from "@/app/components/TextArea";
 import { askQuestion } from "@/lib/api";
 
 export default function AskPage() {
+  const { getToken } = useAuth();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,7 +27,8 @@ export default function AskPage() {
     scrollToBottom();
 
     try {
-      const data = await askQuestion(question);
+      const token = await getToken();
+      const data = await askQuestion(question, token);
 
       setMessages((prev) => [
         ...prev,

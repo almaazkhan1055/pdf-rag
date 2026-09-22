@@ -25,12 +25,18 @@ export async function uploadPdf(file, token) {
   return parseJson(response);
 }
 
-export async function askQuestion(question) {
+export async function askQuestion(question, token) {
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/chat`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({ question }),
   });
 
